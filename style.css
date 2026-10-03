@@ -487,6 +487,17 @@ body {
   font-size: 13px;
 }
 
+/* 版权声明 */
+.copyright {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
 /* ============================================================
    球（第 2 阶段开始用到）
    位置由 Matter.js 算出来，我们用 transform 把图片挪过去。
