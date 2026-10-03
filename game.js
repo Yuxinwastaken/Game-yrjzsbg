@@ -443,6 +443,13 @@ function syncBallsToScreen() {
 // 出球口当前的水平位置（游戏区坐标，单位像素）
 let spawnX = 0;
 
+// 手机端「按住拖动瞄准」用的：记录正按着的那根手指的 pointerId。
+// null = 现在没在按住瞄准。
+let aimingPointerId = null;
+
+// 是不是触摸设备（决定底部提示文案怎么显示）
+const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
 // 下一颗球的等级。第 3 阶段先定下来，第 4 阶段投放后会重新抽
 let nextLevel = 1;
 
@@ -628,8 +635,14 @@ function setupPointerControls() {
   // pointermove：鼠标/手指在游戏区里移动
   stage.addEventListener('pointermove', handlePointerMove);
 
-  // pointerdown：按下去 = 放球（第 4 阶段的核心）
+  // pointerdown：鼠标点一下放球；手指按住开始瞄准
   stage.addEventListener('pointerdown', handleDropPress);
+
+  // pointerup：手指松开时放球（手机端）
+  stage.addEventListener('pointerup', handlePointerUp);
+
+  // pointercancel：触摸被打断时清掉瞄准状态
+  stage.addEventListener('pointercancel', handlePointerCancel);
 
   // pointerleave：移出游戏区，回到中间
   stage.addEventListener('pointerleave', handlePointerLeave);
@@ -1023,16 +1036,12 @@ function dropBall() {
 }
 
 /**
- * 玩家按下鼠标 / 手指时调用：先瞄准，再放球。
- * @param {PointerEvent} event
+ * 真的放一颗球：先做各种拦截检查，再投放，最后打日志。
+ * 鼠标「点一下」和手机「松手」都会走到这里，所以单独抽出来复用。
  */
-function handleDropPress(event) {
-  if (!el.stage) return;
+function tryDrop() {
   // 已经结束了就不能再放球（第 7 阶段加的）
   if (isGameOver) return;
-
-  // 先让出球口挪到手指/鼠标的位置（这样就算在放球前一刻移动也能跟上）
-  handlePointerMove(event);
 
   // 冷却没到就别放了，也不要刷 Console
   if (!canDrop(Date.now())) {
@@ -1046,6 +1055,58 @@ function handleDropPress(event) {
       '放了一颗 ' + ball.level + ' 级球（x=' + Math.round(spawnX) + '），' +
       '目前场上 ' + balls.length + ' 颗，下一个是 ' + nextLevel + ' 级'
     );
+  }
+}
+
+/**
+ * 玩家按下鼠标 / 手指时调用：先瞄准，再决定怎么放球。
+ * 鼠标 / 触控笔：点一下 = 放球。
+ * 手指：按下去 = 开始「按住瞄准」，等松手（handlePointerUp）才放球。
+ * @param {PointerEvent} event
+ */
+function handleDropPress(event) {
+  if (!el.stage) return;
+
+  // 先让出球口挪到手指/鼠标的位置（这样就算在放球前一刻移动也能跟上）
+  handlePointerMove(event);
+
+  // 手机上：按住先瞄准，不放球
+  if (event.pointerType === 'touch') {
+    aimingPointerId = event.pointerId;
+    // 把后续的 move / up / cancel 都「锁」到 stage 上，
+    // 这样手指划出游戏区再松手，我们也能收到 up 事件。
+    el.stage.setPointerCapture(event.pointerId);
+    return;
+  }
+
+  // 鼠标 / 触控笔：点一下直接放球
+  tryDrop();
+}
+
+/**
+ * 手指松开时调用：在手机端，这才是真正放球的时刻。
+ * @param {PointerEvent} event
+ */
+function handlePointerUp(event) {
+  if (!el.stage) return;
+  if (event.pointerType !== 'touch') return;
+  // 只处理「按住瞄准中」的那根手指
+  if (aimingPointerId !== event.pointerId) return;
+
+  aimingPointerId = null;
+
+  // 松手瞬间再校准一次位置，避免最后一小段没触发 move
+  handlePointerMove(event);
+  tryDrop();
+}
+
+/**
+ * 触摸被系统打断（来电、通知下滑等）时调用：清掉瞄准状态，避免卡住。
+ * @param {PointerEvent} event
+ */
+function handlePointerCancel(event) {
+  if (event.pointerId === aimingPointerId) {
+    aimingPointerId = null;
   }
 }
 
@@ -1069,7 +1130,9 @@ function updateHint(blocked) {
   el.hintText.classList.toggle('is-blocked', blocked);
   el.hintText.textContent = blocked
     ? '别点太快啦，稍等一下 ⏳'
-    : '把鼠标移到想要的位置，点一下就放球 💐';
+    : (IS_TOUCH
+        ? '按住并左右拖动瞄准，松手放球 💐'
+        : '把鼠标移到想要的位置，点一下就放球 💐');
 }
 
 /* ------------------------------------------------------------
