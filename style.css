@@ -1,0 +1,808 @@
+/* ============================================================
+   合成大gaygay —— 样式表（第 1 阶段）
+   风格：白色海边玻璃教堂 —— 象牙白 + 淡天蓝 + 雾蓝花艺
+   要改颜色，改下面 :root 里的变量就行，不用动其他地方
+   ============================================================ */
+
+:root {
+  /* —— 颜色令牌 —— */
+  --ivory:        #FBFCFE;  /* 页面底色：象牙白 */
+  --sky-light:    #DCEEF9;  /* 天空浅蓝 */
+  --sky:          #A9D4EE;  /* 天空蓝 */
+  --sky-strong:   #8EC6E8;  /* 主强调色：淡天蓝 */
+  --hydrangea:    #C5D8EA;  /* 花艺雾蓝 */
+  --sage:         #8FA98C;  /* 绿叶鼠尾草绿 */
+  --gold:         #D9C9A8;  /* 极细描边金 */
+  --ink:          #4C5766;  /* 主文字 */
+  --ink-soft:     #8A94A3;  /* 次要文字 */
+  --danger:       #E5707A;  /* 危险线 */
+  --glass:        rgba(255, 255, 255, 0.55); /* 玻璃色 */
+  --glass-edge:   rgba(255, 255, 255, 0.9);
+
+  /* —— 尺寸令牌 —— */
+  --stage-w: 480px;  /* 游戏区宽度，第 2 阶段游戏逻辑会读这个值 */
+  --stage-h: 660px;  /* 游戏区高度 */
+  --radius-lg: 24px;
+
+  /* —— 字体 —— */
+  --font-serif: "Songti SC", "SimSun", "Noto Serif SC", Georgia, serif;
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+
+  /* —— 阴影 —— */
+  --shadow-soft: 0 8px 32px rgba(140, 170, 200, 0.18);
+  --shadow-card: 0 4px 18px rgba(140, 170, 200, 0.14);
+}
+
+/* ---------- 基础重置 ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* 让 width 包含 padding 和 border，更好算尺寸 */
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  /* 象牙白底 + 两团天空蓝光晕，营造教堂透光感 */
+  background-color: var(--ivory);
+  background-image:
+    radial-gradient(ellipse 70% 45% at 50% -8%,  rgba(169, 212, 238, 0.55), transparent 70%),
+    radial-gradient(ellipse 55% 35% at 50% 108%, rgba(197, 216, 234, 0.45), transparent 70%);
+  background-attachment: fixed;
+  overflow-x: hidden; /* 防止拱门溢出造成横向滚动条 */
+}
+
+/* ============================================================
+   背景装饰层：纯 CSS 画的玻璃教堂
+   ============================================================ */
+.scenery {
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* 不挡住点击 */
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* —— 三层嵌套拱门 —— */
+/* 做法：一个半圆的 div（上方圆角 50%，下方不要圆角） */
+.arch {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+  border-color: transparent;   /* 只留顶边那一道弧 */
+  border-top-color: var(--gold);
+  border-left-color: rgba(217, 201, 168, 0.35);
+  border-right-color: rgba(217, 201, 168, 0.35);
+  border-bottom: none;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0; /* 上半椭圆 = 拱顶 */
+}
+
+.arch-back  { top: 4vh;    width: 92vw; max-width: 1100px; height: 62vh; border-width: 1px; opacity: 0.55; }
+.arch-mid   { top: 12vh;   width: 74vw; max-width:  880px; height: 54vh; border-width: 1px; opacity: 0.7; }
+.arch-front { top: 20vh;   width: 58vw; max-width:  680px; height: 46vh; border-width: 2px; opacity: 0.85; }
+
+/* —— 左右立柱 —— */
+.column {
+  position: absolute;
+  top: 18vh;
+  width: 26px;
+  height: 74vh;
+  border-radius: 13px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(220, 238, 249, 0.9) 45%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  box-shadow: 0 0 24px rgba(140, 170, 200, 0.18);
+  opacity: 0.75;
+}
+
+.column-left  { left:  clamp(8px, 4vw, 90px); }
+.column-right { right: clamp(8px, 4vw, 90px); }
+
+/* 柱头：一个小小的圆角方块，模拟科林斯柱头 */
+.column::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: -10px;
+  right: -10px;
+  height: 22px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(140, 170, 200, 0.2);
+}
+
+/* —— 天窗光晕 —— */
+.skylight-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 78vw;
+  height: 42vh;
+  background: radial-gradient(
+    ellipse 50% 60% at 50% 0%,
+    rgba(169, 212, 238, 0.45),
+    transparent 72%
+  );
+}
+
+/* ============================================================
+   游戏舞台：像教堂中间那条玻璃通道
+   ============================================================ */
+.stage-wrap {
+  position: relative;
+  width: var(--stage-w);
+  max-width: 100%; /* 小屏幕上不要超出画面 */
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: var(--stage-h);
+  /* 玻璃通道：浅蓝渐变 + 顶部高光 */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(220, 238, 249, 0.62) 42%, rgba(197, 216, 234, 0.5) 100%);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 0 60px rgba(255, 255, 255, 0.85),
+    var(--shadow-soft);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden; /* 球不能跑出框外 */
+  /* 鼠标移上去变成「小手」，暗示这里可以操作 */
+  cursor: pointer;
+  /* 禁止选中，也禁止手机上拖动时的蓝色高亮 */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none; /* 手机上我们要自己处理触摸 */
+}
+
+/* 玻璃反光：一条斜着的高光 */
+.stage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0) 55%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* 画布铺满整个舞台（垫在最底下，画背景用的） */
+#gameCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: block;
+  pointer-events: none;
+}
+
+/* 球层：所有球都放在这一层里 */
+.ball-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none; /* 鼠标事件交给外面的 stage 处理 */
+}
+
+
+/* —— 左右玻璃墙 —— */
+.wall {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.wall-left {
+  left: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(217, 201, 168, 0.25));
+  border-right: 1px solid rgba(217, 201, 168, 0.5); /* 极细金边 */
+}
+
+.wall-right {
+  right: 0;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.95), rgba(217, 201, 168, 0.25));
+  border-left: 1px solid rgba(217, 201, 168, 0.5);
+}
+
+/* —— 地面 —— */
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  z-index: 4;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(220, 238, 249, 0.7));
+  border-top: 1px solid rgba(217, 201, 168, 0.6);
+}
+
+/* —— 危险线 —— */
+.danger-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 118px; /* 第 2 阶段 game.js 会按尺寸重算这个值 */
+  height: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-top: 2px dashed var(--danger);
+  opacity: 0.85;
+  animation: danger-blink 1.8s ease-in-out infinite;
+}
+
+/* 「危 险 线」三个字贴在右端 */
+.danger-text {
+  position: absolute;
+  right: 16px;
+  top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--danger);
+  opacity: 0.9;
+}
+
+/* 呼吸式闪烁 */
+@keyframes danger-blink {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 0.35; }
+}
+
+/* 有球压在危险线上时：线变实、闪得更急（第 7 阶段） */
+.danger-line.is-danger {
+  border-top-style: solid;
+  opacity: 1;
+  animation: danger-blink-fast 0.5s ease-in-out infinite;
+}
+
+@keyframes danger-blink-fast {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* —— 出球口 —— */
+/* 位置由 JS 用 transform 控制：
+   left 固定 0，水平坐标靠 translateX(x) 平移，
+   再 translateX(-50%) 让圆圈中心对准坐标点 */
+.spawn-mark {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  transform: translateX(50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  z-index: 5;
+  pointer-events: none; /* 不挡鼠标，鼠标事件统一由 .stage 处理 */
+  border: 1px dashed rgba(142, 198, 232, 0.7);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(220, 238, 249, 0.25));
+  box-shadow: 0 0 18px rgba(169, 212, 238, 0.6);
+  animation: spawn-pulse 2.6s ease-in-out infinite;
+  /* 移动时有一点顺滑的跟随感（不是瞬移） */
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+/* 出球口里的「预览球」：显示下一颗球的真实图片和大小 */
+.spawn-ghost {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.75; /* 半透明，表示「还没真的掉下来」 */
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 -4px 10px rgba(120, 150, 180, 0.3),
+    0 2px 8px rgba(140, 170, 200, 0.25);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  /* 换图片的时候淡入一下，避免「啪」地跳变 */
+  transition: opacity 0.18s ease;
+}
+
+/* 出球口底下往下投的一条虚线，帮助瞄准。
+   它是 .stage 的直接子元素（不是出球口的孩子），
+   这样才能把 z-index 设在「画布之上、球之下」的位置。 */
+.spawn-guide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 0;
+  z-index: 1; /* 1 = canvas 之上、ball-layer(2) 之下 */
+  background: linear-gradient(
+    to bottom,
+    rgba(142, 198, 232, 0.5),
+    rgba(142, 198, 232, 0)
+  );
+  pointer-events: none;
+  /* 位置由 JS 用 transform 设置（translateX 到出球口正下方） */
+  transform: translateX(50%);
+}
+
+@keyframes spawn-pulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(169, 212, 238, 0.6); }
+  50%      { box-shadow: 0 0 30px rgba(169, 212, 238, 0.95); }
+}
+
+/* —— 舞台脚下的大理石倒影 —— */
+.stage-shadow {
+  height: 26px;
+  margin: 0 18px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: linear-gradient(to bottom, rgba(140, 170, 200, 0.18), transparent);
+  filter: blur(6px);
+}
+
+/* —— 游戏结束遮罩（第 7 阶段才用，现在先藏起来） —— */
+.gameover {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none; /* JS 会把它改成 flex 来显示 */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: rgba(251, 252, 254, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  text-align: center;
+}
+
+.gameover.is-visible {
+  display: flex;
+}
+
+.gameover-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--ink);
+}
+
+.gameover-score {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.gameover-score span {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--sky-strong);
+  margin-left: 6px;
+}
+
+.gameover-hint {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+/* ============================================================
+   玩法提示
+   ============================================================ */
+.hint {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+/* 放不出球的时候（冷却中），提示文字变淡一点 */
+.hint.is-blocked {
+  color: var(--danger);
+  opacity: 0.75;
+}
+
+/* ============================================================
+   按钮
+   ============================================================ */
+.controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* 窄屏幕上自动换行，不会挤出屏幕 */
+  gap: 10px;
+}
+
+.btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  padding: 12px 40px;
+  border: 1px solid var(--glass-edge);
+  /* 胶囊形：圆角 = 高度的一半，所以看起来两头是半圆 */
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #FFFFFF, var(--sky-light));
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+/* 鼠标移上去：轻轻浮起来一点 */
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(140, 170, 200, 0.3);
+  background: linear-gradient(180deg, #FFFFFF, var(--sky));
+}
+
+/* 按下时沉下去 */
+.btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 8px rgba(140, 170, 200, 0.25);
+}
+
+/* 键盘 Tab 聚焦时的外圈，方便键盘操作 */
+.btn:focus-visible {
+  outline: 2px solid var(--sky-strong);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   页脚
+   ============================================================ */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink-soft);
+}
+
+.footer-flower {
+  color: var(--hydrangea);
+  font-size: 13px;
+}
+
+/* ============================================================
+   球（第 2 阶段开始用到）
+   位置由 Matter.js 算出来，我们用 transform 把图片挪过去。
+   写法说明：
+     left/top 都是 0，真正的坐标靠 translate(x, y) 平移
+     translate(-50%, -50%) 是为了让「图片中心」对准坐标点，
+     否则默认按左上角对齐，球会整体偏右下一半。
+   ============================================================ */
+.ball {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  object-fit: cover;       /* 铺满整个圆，超出的裁掉，绝不拉伸变形 */
+  object-position: center; /* 从正中间裁 */
+  /* 内侧一圈高光 + 底部阴影，让球看起来是立体的 */
+  box-shadow:
+    inset 0 -6px 14px rgba(120, 150, 180, 0.35),
+    inset 0 6px 12px rgba(255, 255, 255, 0.7),
+    0 3px 10px rgba(140, 170, 200, 0.3);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform; /* 提示浏览器这个元素会经常动，动画更流畅 */
+}
+
+/* —— 合成特效（第 5 阶段）——
+   注意：动画只改 opacity 和 filter，
+   绝对【不能】改 transform！
+   因为 transform 被 syncBallsToScreen() 每帧覆写成球的真实位置，
+   一旦在 CSS 里也写 transform，两边会打架，球会乱飞。 */
+.ball.is-merging {
+  animation: ball-pop 0.26s ease-out forwards;
+}
+
+@keyframes ball-pop {
+  0% {
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+  }
+  40% {
+    /* 先「涨一下」再消失，看起来像被压爆了 */
+    opacity: 1;
+    filter: brightness(1.7) saturate(1.6);
+  }
+  100% {
+    opacity: 0;
+    filter: brightness(2.2) saturate(1.8);
+  }
+}
+
+/* 合成时炸开的一圈光晕 */
+.merge-spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(169, 212, 238, 0.5) 45%,
+    rgba(169, 212, 238, 0) 70%
+  );
+  animation: spark-burst 0.42s ease-out forwards;
+}
+
+@keyframes spark-burst {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.1);
+  }
+}
+
+/* 合成出来的新球：从 0.6 倍「弹」到正常大小 */
+.ball.is-born {
+  animation: ball-born 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes ball-born {
+  0% {
+    opacity: 0.4;
+    filter: brightness(1.5);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* ============================================================
+   响应式：三档屏幕
+   ============================================================ */
+
+/* 平板：窄一点 */
+@media (max-width: 560px) {
+  :root {
+    --stage-w: 100%;
+    --stage-h: 600px;
+  }
+  .page {
+    padding: 26px 12px 22px;
+    gap: 18px;
+  }
+}
+
+/* 手机：更矮，字号更小 */
+@media (max-width: 420px) {
+  :root {
+    --stage-h: 520px;
+    --radius-lg: 18px;
+  }
+  .page {
+    padding: 18px 10px 18px;
+    gap: 14px;
+  }
+  .hud {
+    gap: 8px;
+  }
+  .hud-card {
+    padding: 8px 4px;
+  }
+  .next-preview {
+    width: 28px;
+    height: 28px;
+  }
+  .btn {
+    padding: 10px 30px;
+    font-size: 13px;
+  }
+  .column {
+    display: none; /* 手机屏幕窄，立柱挡住内容，直接不显示 */
+  }
+  .danger-text {
+    font-size: 9px;
+  }
+}
+
+/* 又矮又宽的横屏手机 */
+@media (max-height: 620px) {
+  :root {
+    --stage-h: 440px;
+  }
+  .page {
+    padding-top: 14px;
+  }
+}
+
+/* ============================================================
+   无障碍：如果用户在系统里打开了「减少动态效果」，就关掉闪烁动画
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .danger-line,
+  .spawn-mark {
+    animation: none;
+  }
+}
+
+.page {
+  position: relative;
+  z-index: 1; /* 站在装饰层上面 */
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 40px 16px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+/* ============================================================
+   标题区
+   ============================================================ */
+.header {
+  text-align: center;
+  width: 100%;
+}
+
+.title {
+  font-family: var(--font-serif);
+  /* 字号随屏幕缩放：最小 22px，最大 34px */
+  font-size: clamp(22px, 5.6vw, 34px);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: #FFFFFF;
+  /* 白字 + 蓝色光晕，像教堂里的冷光 */
+  text-shadow:
+    0 1px 0   rgba(169, 212, 238, 0.9),
+    0 2px 10px rgba(142, 198, 232, 0.55),
+    0 0 26px  rgba(255, 255, 255, 0.9);
+}
+
+/* 标题下面的横线 + 中间菱形 */
+.title-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 12px 0 10px;
+}
+
+.rule-line {
+  display: block;
+  width: clamp(48px, 16vw, 96px);
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+.rule-diamond {
+  display: block;
+  width: 7px;
+  height: 7px;
+  background: var(--gold);
+  transform: rotate(45deg); /* 正方形转 45 度 = 菱形 */
+}
+
+.subtitle {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+/* ============================================================
+   HUD：分数 / 下一个 / 最高分
+   ============================================================ */
+.hud {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.hud-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: var(--radius-lg);
+  /* 磨砂玻璃卡片 */
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hud-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--ink-soft);
+}
+
+.hud-value {
+  font-family: var(--font-serif);
+  font-size: clamp(18px, 4.6vw, 24px);
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums; /* 数字等宽，跳动时不抖 */
+}
+
+/* 「下一个」那张卡里的小圆预览 */
+.next-preview {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--sky-light), var(--hydrangea));
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 -3px 8px rgba(140, 170, 200, 0.25);
+  /* 图片由 JS 用 backgroundImage 塞进来，铺满整个圆 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 每当「下一个」换了新球，让圆闪一下，提醒玩家看一眼 */
+.next-preview.is-changed {
+  animation: next-pop 0.34s ease-out;
+}
+
+@keyframes next-pop {
+  0% {
+    opacity: 0.35;
+    box-shadow: 0 0 0 0 rgba(142, 198, 232, 0.85);
+  }
+  55% {
+    opacity: 1;
+    box-shadow: 0 0 0 6px rgba(142, 198, 232, 0);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(142, 198, 232, 0);
+  }
+}
+
+/* 抽到大球（5、6 级）时，描一圈金边，给个小惊喜 */
+.next-preview.is-rare {
+  border: 1px solid rgba(217, 201, 168, 0.95);
+  box-shadow:
+    inset 0 -3px 8px rgba(140, 170, 200, 0.25),
+    0 0 10px rgba(217, 201, 168, 0.8);
+}

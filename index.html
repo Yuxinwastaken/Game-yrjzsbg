@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     合成大gaygay —— 第 8 阶段：最高分
+     这个文件只负责「长什么样」，不管「怎么玩」。
+     玩法逻辑在 game.js 里，物理引擎是 Matter.js。
+     ============================================================ -->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 手机端不要缩放，页面宽度 = 设备宽度 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>合成大gaygay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== 背景装饰层：纯 CSS 画的玻璃教堂 ==========
+       这一层只是画面，不接收鼠标点击（pointer-events: none） -->
+  <div class="scenery" aria-hidden="true">
+    <!-- 三层嵌套拱门 -->
+    <div class="arch arch-back"></div>
+    <div class="arch arch-mid"></div>
+    <div class="arch arch-front"></div>
+    <!-- 左右立柱 -->
+    <div class="column column-left"></div>
+    <div class="column column-right"></div>
+    <!-- 天窗的光晕 -->
+    <div class="skylight-glow"></div>
+  </div>
+
+  <!-- ========== 页面主体 ========== -->
+  <div class="page">
+
+    <!-- 标题区 -->
+    <header class="header">
+      <h1 class="title">合 成 大 g a y g a y</h1>
+      <div class="title-rule">
+        <span class="rule-line"></span>
+        <span class="rule-diamond"></span>
+        <span class="rule-line"></span>
+      </div>
+      <p class="subtitle">把两个一样的球滚在一起，它们就会长大</p>
+    </header>
+
+    <!-- HUD：分数 / 最高分 / 下一个 -->
+    <section class="hud">
+      <div class="hud-card">
+        <span class="hud-label">分数</span>
+        <!-- 这些 id 会被 game.js 用 getElementById 找到 -->
+        <span class="hud-value" id="score">0</span>
+      </div>
+
+      <div class="hud-card hud-card-next">
+        <span class="hud-label">下一个</span>
+        <!-- 第 1 阶段这里是空白圆，第 2 阶段会用图片填进去 -->
+        <div class="next-preview" id="nextPreview"></div>
+      </div>
+
+      <div class="hud-card">
+        <span class="hud-label">最高分</span>
+        <span class="hud-value" id="bestScore">0</span>
+      </div>
+    </section>
+
+    <!-- ========== 游戏舞台 ==========
+         玻璃通道容器：所有球以后都会掉进这里 -->
+    <section class="stage-wrap">
+      <div class="stage" id="stage">
+
+        <!-- 左右两面玻璃墙（视觉用，碰撞墙在 game.js 里用数字定义） -->
+        <div class="wall wall-left"></div>
+        <div class="wall wall-right"></div>
+
+        <!-- 画布：用来画背景、危险线辅助线（第 2 阶段开始用到） -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- 球层：所有球都是这一层里的 <img>（第 2 阶段开始用到）
+             用真实图片元素而不是画在 canvas 上，
+             因为这样图片最清晰，而且可以直接用 CSS 做圆角和光影 -->
+        <div class="ball-layer" id="ballLayer"></div>
+
+        <!-- 危险线：球超过这条线就输 -->
+        <div class="danger-line" id="dangerLine">
+          <span class="danger-text">危 险 线</span>
+        </div>
+
+        <!-- 出球口：跟着鼠标/手指左右移动，里面显示下一颗球的预览（第 3 阶段） -->
+        <div class="spawn-mark" id="spawnMark"></div>
+
+        <!-- 地面 -->
+        <div class="floor"></div>
+
+        <!-- 游戏结束遮罩（第 7 阶段才显示） -->
+        <div class="gameover" id="gameoverPanel">
+          <h2 class="gameover-title" id="gameoverTitle">婚礼举办失败</h2>
+          <p class="gameover-score">本局得分 <span id="finalScore">0</span></p>
+          <p class="gameover-hint" id="gameoverHint">是否需要再次举办？点下面的按钮</p>
+        </div>
+
+      </div>
+
+      <!-- 脚下的大理石倒影 -->
+      <div class="stage-shadow"></div>
+    </section>
+
+    <!-- 玩法提示：第 4 阶段开始「点一下就放球」 -->
+    <p class="hint" id="hintText">把鼠标移到想要的位置，点一下就放球 💐</p>
+
+    <!-- 按钮区 -->
+    <div class="controls">
+      <button class="btn btn-primary" id="restartBtn" type="button">重 新 开 始</button>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+      <span class="footer-flower">❁</span>
+      <span>用同样的球，拼出一整座教堂</span>
+      <span class="footer-flower">❁</span>
+    </footer>
+
+  </div>
+
+  <!-- ========== 第三方库：Matter.js（物理引擎） ==========
+       它负责算「球怎么滚、怎么撞、怎么堆」，我们只管画。
+       这一段必须在 game.js 前面，否则 game.js 找不到 Matter。 -->
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+
+  <!-- 最后才加载脚本，保证上面的元素都已经存在 -->
+  <script src="game.js"></script>
+</body>
+</html>
